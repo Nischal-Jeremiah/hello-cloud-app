@@ -28,11 +28,15 @@ jobs:
       - name: Run Tests
         run: npm test
 
-      # Step 5: Build (optional for Node.js)
+      # Step 5: Build (optional for simple Node.js app)
       - name: Build
         run: echo "No build step for this simple app"
 
-      # Step 6: Deploy to Elastic Beanstalk
+      # Step 6: Zip application for deployment
+      - name: Zip application
+        run: zip -r my-app.zip . -x "*.git*" "node_modules/*"
+
+      # Step 7: Deploy to Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v22
         with:
@@ -40,6 +44,7 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: "HelloCloudApp"
           environment_name: "HelloCloudApp-env"
-          region: "us-east-1"
+          region: "eu-north-1"
           version_label: "v1-${{ github.sha }}"
           bucket_name: "elasticbeanstalk-eu-north-1-493608842287"
+          zip_file: "my-app.zip"
