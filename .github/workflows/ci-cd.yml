@@ -46,5 +46,6 @@ jobs:
           environment_name: "HelloCloudApp-env"
           region: "eu-north-1"
           version_label: "v1-${{ github.sha }}"
-          bucket_name: "elasticbeanstalk-eu-north-1-493608842287"
-          zip_file: "my-app.zip"
+          deployment_package: "my-app.zip"
+          existing_bucket_name: "elasticbeanstalk-eu-north-1-493608842287"
+          wait_for_deployment: true
