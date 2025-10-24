@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello Cloud App</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      font-family: 'Arial', sans-serif;
+      color: white;
+      text-align: center;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1e3c72, #2a5298, #00c6ff);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    h1 {
+      font-size: 4em;
+      text-shadow: 0 0 10px #fff, 0 0 20px #00c6ff, 0 0 30px #00c6ff, 0 0 40px #1e3c72, 0 0 50px #1e3c72, 0 0 60px #1e3c72;
+      animation: glowPulse 2s ease-in-out infinite alternate;
+      z-index: 3;
+      position: relative;
+    }
+
+    p {
+      font-size: 1.5em;
+      margin-top: 10px;
+      text-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+      z-index: 3;
+      position: relative;
+    }
+
+    @keyframes glowPulse {
+      0% {
+        text-shadow: 0 0 10px #fff, 0 0 20px #00c6ff, 0 0 30px #00c6ff, 0 0 40px #1e3c72, 0 0 50px #1e3c72, 0 0 60px #1e3c72;
+      }
+      100% {
+        text-shadow: 0 0 20px #fff, 0 0 40px #00c6ff, 0 0 60px #00c6ff, 0 0 80px #1e3c72, 0 0 100px #1e3c72, 0 0 120px #1e3c72;
+      }
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+
+  <div>
+    <h1>Hello Cloud!</h1>
+    <p>Deployed with Node.js & CI/CD 🚀</p>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      initClouds();
+    });
+
+    // Mouse tracking for particle interactivity
+    const mouse = { x: null, y: null, radius: 100 };
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.x;
+      mouse.y = e.y;
+    });
+
+    // ----------- Particles -----------
+    const particles = [];
+    const particleCount = 100;
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.radius = Math.random() * 3 + 1;
+        this.dx = (Math.random() - 0.5) * 1.5;
+        this.dy = (Math.random() - 0.5) * 1.5;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.fill();
+      }
+
+      update() {
+        this.x += this.dx;
+        this.y += this.dy;
+
+        if (this.x < 0 || this.x > width) this.dx *= -1;
+        if (this.y < 0 || this.y > height) this.dy *= -1;
+
+        // Mouse repulsion
+        let dx = mouse.x - this.x;
+        let dy = mouse.y - this.y;
+        let distance = Math.sqrt(dx*dx + dy*dy);
+        if (distance < mouse.radius) {
+          let angle = Math.atan2(dy, dx);
+          this.x -= Math.cos(angle);
+          this.y -= Math.sin(angle);
+        }
+
+        this.draw();
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
+    }
+
+    function connectParticles() {
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a + 1; b < particles.length; b++) {
+          let dx = particles[a].x - particles[b].x;
+          let dy = particles[a].y - particles[b].y;
+          let distance = Math.sqrt(dx*dx + dy*dy);
+          if (distance < 120) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(255,255,255,${1 - distance/120})`;
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    // ----------- Floating Clouds -----------
+    let clouds = [];
+    const cloudCount = 10;
+
+    class Cloud {
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height / 2;
+        this.radius = Math.random() * 50 + 50;
+        this.dx = (Math.random() - 0.3) * 0.3;
+        this.dy = (Math.random() - 0.05) * 0.1;
+        this.opacity = Math.random() * 0.2 + 0.1;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
+        ctx.fill();
+      }
+
+      update() {
+        this.x += this.dx;
+        this.y += this.dy;
+        if (this.x - this.radius > width) this.x = -this.radius;
+        if (this.y - this.radius > height / 2) this.y = 0;
+        this.draw();
+      }
+    }
+
+    function initClouds() {
+      clouds = [];
+      for (let i = 0; i < cloudCount; i++) {
+        clouds.push(new Cloud());
+      }
+    }
+
+    initClouds();
+
+    // ----------- Animation Loop -----------
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      clouds.forEach(cloud => cloud.update());
+      particles.forEach(p => p.update());
+      connectParticles();
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
